@@ -51,4 +51,4 @@ var wg sync.WaitGroup
 // You can call init() again to start it up again
 var Quit = make(chan struct{})
 
-var Register = new(Registry)
+var Register = make(Registry)
