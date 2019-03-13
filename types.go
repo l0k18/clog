@@ -6,77 +6,94 @@ type StringClosure func() string
 // Value is the generic list of things processed by the log chan
 type Value []interface{}
 
-// Fatal is a log value that indicates level and how to interpret the interface slice
-type Fatal Value
+type (
 
-// Fatalf is a log value that indicates level and how to interpret the interface slice
-type Fatalf Value
+	// Fatal is a log value that indicates level and how to interpret the interface slice
+	Fatal Value
 
-// Ftl is a log type that is just one string
-type Ftl string
+	// Fatalf is a log value that indicates level and how to interpret the interface slice
+	Fatalf Value
 
-// Fatalc is for passing a closure when the log entry is expensive to compute
-type Fatalc StringClosure
+	// Ftl is a log type that is just one string
+	Ftl string
 
-// Error is a log value that indicates level and how to interpret the interface slice
-type Error Value
+	// Fatalc is for passing a closure when the log entry is expensive to compute
+	Fatalc StringClosure
+)
 
-// Errorf is a log value that indicates level and how to interpret the interface slice
-type Errorf Value
+type (
+	// Error is a log value that indicates level and how to interpret the interface slice
+	Error Value
 
-// Err is a log type that is just one string
-type Err string
+	// Errorf is a log value that indicates level and how to interpret the interface slice
+	Errorf Value
 
-// Errorc is for passing a closure when the log entry is expensive to compute
-type Errorc StringClosure
+	// Err is a log type that is just one string
+	Err string
 
-// Warn is a log value that indicates level and how to interpret the interface slice
-type Warn Value
+	// Errorc is for passing a closure when the log entry is expensive to compute
+	Errorc StringClosure
+)
 
-// Warnf is a log value that indicates level and how to interpret the interface slice
-type Warnf Value
+type (
 
-// Wrn is a log type that is just one string
-type Wrn string
+	// Warn is a log value that indicates level and how to interpret the interface slice
+	Warn Value
 
-// Warnc is for passing a closure when the log entry is expensive to compute
-type Warnc StringClosure
+	// Warnf is a log value that indicates level and how to interpret the interface slice
+	Warnf Value
 
-// Info is a log value that indicates level and how to interpret the interface slice
-type Info Value
+	// Wrn is a log type that is just one string
+	Wrn string
 
-// Infof is a log value that indicates level and how to interpret the interface slice
-type Infof Value
+	// Warnc is for passing a closure when the log entry is expensive to compute
+	Warnc StringClosure
+)
 
-// Inf is a log type that is just one string
-type Inf string
+type (
 
-// Infoc is for passing a closure when the log entry is expensive to compute
-type Infoc StringClosure
+	// Info is a log value that indicates level and how to interpret the interface slice
+	Info Value
 
-// Debug is a log value that indicates level and how to interpret the interface slice
-type Debug Value
+	// Infof is a log value that indicates level and how to interpret the interface slice
+	Infof Value
 
-// Debugf is a log value that indicates level and how to interpret the interface slice
-type Debugf Value
+	// Inf is a log type that is just one string
+	Inf string
 
-// Dbg is a log type that is just one string
-type Dbg string
+	// Infoc is for passing a closure when the log entry is expensive to compute
+	Infoc StringClosure
+)
 
-// Debugc is for passing a closure when the log entry is expensive to compute
-type Debugc StringClosure
+type (
 
-// Trace is a log value that indicates level and how to interpret the interface slice
-type Trace Value
+	// Debug is a log value that indicates level and how to interpret the interface slice
+	Debug Value
 
-// Tracef is a log value that indicates level and how to interpret the interface slice
-type Tracef Value
+	// Debugf is a log value that indicates level and how to interpret the interface slice
+	Debugf Value
 
-// Trc is a log type that is just one string
-type Trc string
+	// Dbg is a log type that is just one string
+	Dbg string
 
-// Tracec is for passing a closure when the log entry is expensive to compute
-type Tracec StringClosure
+	// Debugc is for passing a closure when the log entry is expensive to compute
+	Debugc StringClosure
+)
+
+type (
+
+	// Trace is a log value that indicates level and how to interpret the interface slice
+	Trace Value
+
+	// Tracef is a log value that indicates level and how to interpret the interface slice
+	Tracef Value
+
+	// Trc is a log type that is just one string
+	Trc string
+
+	// Tracec is for passing a closure when the log entry is expensive to compute
+	Tracec StringClosure
+)
 
 // A SubSystem is a logger with a specific prefix name prepended  to the entry
 type SubSystem struct {
