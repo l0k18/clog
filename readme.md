@@ -2,6 +2,10 @@
 
 Clog is a logger that works by receiving values, including closures, on channels and triggering an output through a configurable output function. The log level can be changed on the fly and immediately takes effect. There is colour available for tags if desired.
 
+## Documentation
+
+See here at our private [godoc](http://89.40.12.55:8008/pkg/git.parallelcoin.io/clog/) (or go get it and run your own :) )
+
 ## Automatic
 
 As soon as you import it into your application it is instantly activated by an automatic init routine, and is available package-wide, enabling easy per-subsystem logging based on the application's filesystem hierarchy.
