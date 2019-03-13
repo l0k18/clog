@@ -48,7 +48,7 @@ var wg sync.WaitGroup
 
 // Quit signals the logger to stop. Invoke like this:
 //     close(clog.Quit)
-// You can call Init again to start it up again
+// You can call init() again to start it up again
 var Quit = make(chan struct{})
 
 var Register Registry
