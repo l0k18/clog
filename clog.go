@@ -298,7 +298,7 @@ func init() {
 					s = trcTag(color) + s
 				}
 				if color {
-					t = colorstring.Color("[light_gray]" + t + "[dark_gray]")
+					t = colorstring.Color("[light_gray]" + fmt.Sprintf("%16v", t) + "[dark_gray]")
 				}
 				fmt.Fprint(Writer, t+s)
 			}
