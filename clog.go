@@ -2,9 +2,6 @@ package cl
 
 import (
 	"fmt"
-	"io"
-	"os"
-	"sync"
 	"time"
 
 	"git.parallelcoin.io/pod/pkg/util/interrupt"
@@ -12,173 +9,10 @@ import (
 	"github.com/mitchellh/colorstring"
 )
 
-// Og is the root channel that processes logging messages, so, cl.Og <- Fatalf{"format string %s %d", stringy, inty} sends to the root
-var Og = make(chan interface{})
-
-var wg sync.WaitGroup
-
-// StringClosure is a function that returns a string, used to defer execution of expensive logging operations
-type StringClosure func() string
-
-// Value is the generic list of things processed by the log chan
-type Value []interface{}
-
-// Fatal is a log value that indicates level and how to interpret the interface slice
-type Fatal Value
-
-// Fatalf is a log value that indicates level and how to interpret the interface slice
-type Fatalf Value
-
-// Ftl is a log type that is just one string
-type Ftl string
-
-// Fatalc is for passing a closure when the log entry is expensive to compute
-type Fatalc StringClosure
-
-// Error is a log value that indicates level and how to interpret the interface slice
-type Error Value
-
-// Errorf is a log value that indicates level and how to interpret the interface slice
-type Errorf Value
-
-// Err is a log type that is just one string
-type Err string
-
-// Errorc is for passing a closure when the log entry is expensive to compute
-type Errorc StringClosure
-
-// Warn is a log value that indicates level and how to interpret the interface slice
-type Warn Value
-
-// Warnf is a log value that indicates level and how to interpret the interface slice
-type Warnf Value
-
-// Wrn is a log type that is just one string
-type Wrn string
-
-// Warnc is for passing a closure when the log entry is expensive to compute
-type Warnc StringClosure
-
-// Info is a log value that indicates level and how to interpret the interface slice
-type Info Value
-
-// Infof is a log value that indicates level and how to interpret the interface slice
-type Infof Value
-
-// Inf is a log type that is just one string
-type Inf string
-
-// Infoc is for passing a closure when the log entry is expensive to compute
-type Infoc StringClosure
-
-// Debug is a log value that indicates level and how to interpret the interface slice
-type Debug Value
-
-// Debugf is a log value that indicates level and how to interpret the interface slice
-type Debugf Value
-
-// Dbg is a log type that is just one string
-type Dbg string
-
-// Debugc is for passing a closure when the log entry is expensive to compute
-type Debugc StringClosure
-
-// Trace is a log value that indicates level and how to interpret the interface slice
-type Trace Value
-
-// Tracef is a log value that indicates level and how to interpret the interface slice
-type Tracef Value
-
-// Trc is a log type that is just one string
-type Trc string
-
-// Tracec is for passing a closure when the log entry is expensive to compute
-type Tracec StringClosure
-
-// A SubSystem is a logger with a specific prefix name prepended  to the entry
-type SubSystem struct {
-	Name        string
-	Ch          chan interface{}
-	Level       int
-	LevelString string
-}
-
 // Close a SubSystem logger
 func (s *SubSystem) Close() {
 
 	close(s.Ch)
-}
-
-// Ftlc appends the subsystem name to the front of a closure's output and this runs only if the log entry is called
-func (s *SubSystem) Ftlc(closure StringClosure) {
-
-	if s.Level > _off {
-		s.Ch <- Fatalc(closure)
-	}
-}
-
-// Errc appends the subsystem name to the front of a closure's output and this runs only if the log entry is called
-func (s *SubSystem) Errc(closure StringClosure) {
-
-	if s.Level > _fatal {
-		s.Ch <- Errorc(closure)
-	}
-}
-
-// Wrnc appends the subsystem name to the front of a closure's output and this runs only if the log entry is called
-func (s *SubSystem) Wrnc(closure StringClosure) {
-
-	if s.Level > _error {
-		s.Ch <- Warnc(closure)
-	}
-}
-
-// Infc appends the subsystem name to the front of a closure's output and this runs only if the log entry is called
-func (s *SubSystem) Infc(closure StringClosure) {
-
-	if s.Level > _warn {
-		s.Ch <- Infoc(closure)
-	}
-}
-
-// Dbgc appends the subsystem name to the front of a closure's output and this runs only if the log entry is called
-func (s *SubSystem) Dbgc(closure StringClosure) {
-
-	if s.Level > _info {
-		s.Ch <- Debugc(closure)
-	}
-}
-
-// Trcc appends the subsystem name to the front of a closure's output and this runs only if the log entry is called
-func (s *SubSystem) Trcc(closure StringClosure) {
-
-	if s.Level > _debug {
-		s.Ch <- Tracec(closure)
-	}
-}
-
-// Writer is the place thelogs put out
-var Writer = io.MultiWriter(os.Stdout)
-
-const (
-	_off = iota
-	_fatal
-	_error
-	_warn
-	_info
-	_debug
-	_trace
-)
-
-// Levels is the map of name to level
-var Levels = map[string]int{
-	"off":   _off,
-	"fatal": _fatal,
-	"error": _error,
-	"warn":  _warn,
-	"info":  _info,
-	"debug": _debug,
-	"trace": _trace,
 }
 
 // SetLevel changes the level of a subsystem by level name
@@ -193,26 +27,17 @@ func (s *SubSystem) SetLevel(level string) {
 	}
 }
 
-// const errFmt = "ERR:FMT\n  "
-
-// Color turns on and off colouring of error type tag
-var Color = true
-
-// ColorChan accepts a bool and flips the state accordingly
-var ColorChan = make(chan bool)
-
-// ShuttingDown indicates if the shutdown switch has been triggered
-var ShuttingDown bool
-
 // NewSubSystem starts up a new subsystem logger
-func NewSubSystem(
-	name, level string) (ss *SubSystem) {
+func NewSubSystem(name, level string) (ss *SubSystem) {
 
 	wg.Add(1)
 	ss = new(SubSystem)
 	ss.Ch = make(chan interface{})
 	ss.Name = name
 	ss.SetLevel(level)
+	Register.Add(ss)
+
+	// The main subsystem processing loop
 	go func() {
 
 		for i := range ss.Ch {
@@ -482,92 +307,6 @@ func init() {
 	go worker()
 	wg.Done()
 }
-
-func ftlTag(
-	color bool) string {
-	tag := "FTL"
-	if color {
-		pre := ""  // colorstring.Color("[light_gray][[dark_gray]")
-		post := "" // colorstring.Color("[light_gray]][dark_gray]")
-		tag = pre + colorstring.Color("[red]"+colorstring.Color("[bold]"+tag)) + post
-	} else {
-		tag = "[" + tag + "]"
-	}
-	return " " + tag + " "
-}
-
-func errTag(
-	color bool) string {
-	tag := "ERR"
-	if color {
-		pre := ""  // colorstring.Color("[light_gray][[dark_gray]")
-		post := "" // colorstring.Color("[light_gray]][dark_gray]")
-		tag = pre + colorstring.Color("[yellow]"+colorstring.Color("[bold]"+tag)) + post
-	} else {
-		tag = "[" + tag + "]"
-	}
-	return " " + tag + " "
-
-}
-
-func wrnTag(
-	color bool) string {
-	tag := "WRN"
-	if color {
-		pre := ""  // colorstring.Color("[light_gray][[dark_gray]")
-		post := "" // colorstring.Color("[light_gray]][dark_gray]")
-		tag = pre + colorstring.Color("[green]"+colorstring.Color("[bold]"+tag)) + post
-	} else {
-		tag = "[" + tag + "]"
-	}
-	return " " + tag + " "
-
-}
-
-func infTag(
-	color bool) string {
-	tag := "INF"
-	if color {
-		pre := ""  // colorstring.Color("[light_gray][[dark_gray]")
-		post := "" // colorstring.Color("[light_gray]][dark_gray]")
-		tag = pre + colorstring.Color("[cyan]"+colorstring.Color("[bold]"+tag)) + post
-	} else {
-		tag = "[" + tag + "]"
-	}
-	return " " + tag + " "
-
-}
-func dbgTag(
-	color bool) string {
-	tag := "DBG"
-	if color {
-		pre := ""  // colorstring.Color("[light_gray][[dark_gray]")
-		post := "" // colorstring.Color("[light_gray]][dark_gray]")
-		tag = pre + colorstring.Color("[blue]"+colorstring.Color("[bold]"+tag)) + post
-	} else {
-		tag = "[" + tag + "]"
-	}
-	return " " + tag + " "
-
-}
-func trcTag(
-	color bool) string {
-	tag := "TRC"
-	if color {
-		pre := ""  // colorstring.Color("[light_gray][[dark_gray]")
-		post := "" // colorstring.Color("[light_gray]][dark_gray]")
-		tag = pre + colorstring.Color("[magenta]"+colorstring.Color("[bold]"+tag)) + post
-	} else {
-		tag = "[" + tag + "]"
-	}
-	return " " + tag + " "
-
-}
-
-// Quit signals the logger to stop. Invoke like this:
-//     close(clog.Quit)
-// You can call Init again to start it up again
-var Quit = make(chan struct{})
 
 // Shutdown the application, allowing the logger a moment to clear the channels
 func Shutdown() {
