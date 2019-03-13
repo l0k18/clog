@@ -8,7 +8,7 @@ See here at our private [godoc](http://89.40.12.55:8008/pkg/git.parallelcoin.io/
 
 ## Automatic
 
-As soon as you import it into your application it is instantly activated by an automatic init routine, and is available package-wide, enabling easy per-subsystem logging based on the application's filesystem hierarchy.
+As soon as you import it into your application it is instantly activated by an automatic init routine, and is available package-wide, enabling easy per-subsystem logging based on the application's filesystem hierarchy, as well as within packages, it is a one liner to declare a new subsystem.
 
 ## Channel-based
 
